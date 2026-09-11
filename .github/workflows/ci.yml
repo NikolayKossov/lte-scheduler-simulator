@@ -1,0 +1,33 @@
+name: LTE simulator CI
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [g++, clang++]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure with sanitizers
+        env:
+          CXX: ${{ matrix.compiler }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZERS=ON
+      - name: Build
+        run: cmake --build build --parallel 2
+      - name: Unit and integration tests
+        run: ctest --test-dir build --output-on-failure --output-junit tests.xml
+      - name: Run comparison
+        run: ./build/lte_simulator --ticks 1000 --output results
+      - name: Attach results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.compiler }}
+          path: |
+            build/tests.xml
+            results/*.csv
+          retention-days: 14
