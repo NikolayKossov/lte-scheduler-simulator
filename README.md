@@ -104,6 +104,24 @@ good channels. It is not evidence that PF always outperforms RR.
 
 ## Metrics and results
 
+Verified [CI run](https://github.com/NikolayKossov/lte-scheduler-simulator/actions/runs/34618758129):
+**19/19 tests passed on both GCC and Clang**, with sanitizers enabled.
+Measured for the default 1,000-TTI experiments (one simulated second):
+
+| Scenario | Policy | Mbps | Jain fairness | Mean completed-packet delay (ms) | Dropped bytes |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Equal | RR | 7.6800 | 1.000000 | 112.39 | 1,322,400 |
+| Equal | PF | 7.6800 | 1.000000 | 112.39 | 1,322,400 |
+| Varying channel | RR | 5.7600 | 1.000000 | 147.40 | 1,562,400 |
+| Varying channel | PF | 14.0352 | 0.999857 | 54.30 | 546,600 |
+| Bursty | RR | 2.8800 | 1.000000 | 4.00 | 0 |
+| Bursty | PF | 2.8800 | 1.000000 | 4.00 | 0 |
+
+The first two scenarios intentionally overload the queues. The rotating-channel
+scenario favors opportunistic scheduling; these numbers are not LTE network
+benchmarks or a general proof that PF is better. Equal offered traffic and
+similar final throughputs also do not imply equal short-term waiting times.
+
 - `summary.csv`: six rows, one per scenario/algorithm.
 - `users.csv`: 24 rows with per-UE counters and mean delay.
 - Throughput = transmitted payload bits / simulated duration, reported in Mbps.
